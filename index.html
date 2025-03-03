@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Energy-Saving Lighting System</title>
+    <style>
+        body {
+            background: linear-gradient(to bottom, #ADD8E6, #D8BFD8);
+            font-family: Arial, sans-serif;
+            color: white;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            text-shadow: 0 0 10px white;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 2rem;
+        }
+
+        .light-bulb {
+            cursor: pointer;
+            width: 100px;
+            height: 160px;
+            position: relative;
+            margin: 30px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .bulb {
+            width: 80px;
+            height: 100px;
+            background-color: #f0f0f0;
+            border-radius: 50% 50% 40% 40%;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            position: relative;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+
+        .bulb.on {
+            background-color: yellow;
+            box-shadow: 0 0 50px yellow;
+        }
+
+        .bulb.on::before {
+            background-color: yellow;
+        }
+
+        .base {
+            width: 30px;
+            height: 35px;
+            background-color: #666;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: absolute;
+            top: 105px;
+        }
+
+        .base div {
+            width: 25px;
+            height: 6px;
+            background-color: #555;
+            margin: 2px 0;
+            border-radius: 3px;
+        }
+
+        .sensor-table {
+            background-color: #FFD1DC;
+            color: black;
+            padding: 20px;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            margin-top: 30px;
+            border: 1px solid black;
+        }
+
+        .sensor-table h2 {
+            margin: 0 0 15px 0;
+            font-size: 1.5rem;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 10px;
+            border-collapse: collapse;
+            border: 1px solid black;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 10px;
+        }
+
+        th {
+            background-color: #f0f0f0;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .sensor-table h2 {
+                font-size: 1.2rem;
+            }
+
+            .light-bulb {
+                width: 80px;
+                height: 140px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Smart Energy-Saving Lighting System</h1>
+    <div class="light-bulb" id="lightBulb">
+        <div class="bulb"></div>
+        <div class="base">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+    </div>
+    <div class="sensor-table">
+        <h2>Historial de Sensores</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Sensor</th>
+                    <th>Hora de Activación</th>
+                </tr>
+            </thead>
+            <tbody id="eventTable">
+                <!-- Aquí se llenarán los eventos mediante AJAX -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.getElementById('lightBulb').addEventListener('click', function() {
+            // Control del foco mediante AJAX
+            fetch('/toggle')
+                .then(response => response.text())
+                .then(data => {
+                    if (data === "ON") {
+                        document.querySelector('.bulb').classList.add('on');
+                    } else {
+                        document.querySelector('.bulb').classList.remove('on');
+                    }
+                });
+        });
+
+        // Función para obtener los eventos del historial
+        function getSensorHistory() {
+            fetch('/sensor-history')
+                .then(response => response.json())
+                .then(data => {
+                    const eventTable = document.getElementById('eventTable');
+                    eventTable.innerHTML = '';  // Limpiar la tabla antes de actualizar
+
+                    data.forEach(event => {
+                        const row = document.createElement('tr');
+                        const sensorCell = document.createElement('td');
+                        const timeCell = document.createElement('td');
+
+                        sensorCell.textContent = event.sensor;
+                        timeCell.textContent = event.time;
+
+                        row.appendChild(sensorCell);
+                        row.appendChild(timeCell);
+                        eventTable.appendChild(row);
+                    });
+                });
+        }
+
+        // Llamar a getSensorHistory cada 2 segundos para mantener actualizado el historial
+        setInterval(getSensorHistory, 2000);
+
+    </script>
+</body>
+</html>
